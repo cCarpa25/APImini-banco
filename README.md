@@ -1,129 +1,181 @@
+# Mini Banco Central API
 
-# API Mini Banco Central
-
-Esta é uma API RESTful que simula um "Mini Banco Central", permitindo o gerenciamento de instituições financeiras, contas bancárias, transações, saldos e extratos consolidados por usuário e instituição.
-
-## 🧰 Tecnologias Utilizadas
-
-- Node.js
-- Express.js
-- Sequelize (ORM)
-- SQLite (banco de dados)
-- JWT (autenticação)
-- Docker (opcional)
-- Insomnia (testes de rotas)
+Esta é uma API simples para simular funcionalidades básicas de um sistema bancário. Desenvolvida com Node.js, Express e Sequelize.
 
 ---
 
-## 🚀 Como Rodar o Projeto
+## ✅ Pré-requisitos
 
-### 1. Clonar o repositório
+Antes de começar, tenha instalado:
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/) 
+
+---
+
+## 🚀 Como rodar o projeto
 
 ```bash
-git clone <seu-repositorio-ou-descompacte-o-zip>
-cd APImini-banco
+# Clone o repositório
+git clone <url-do-repositorio>
+
+# Acesse a pasta do projeto
+cd nome-do-repositorio
+
+# Crie o arquivo .env com o conteúdo abaixo:
 ```
 
-### 2. Instalar as dependências
+```
+SERVER_PORT=3000
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASS=senha123
+DB_NAME=minibanco
+```
 
 ```bash
+# Instale as dependências
 npm install
-```
 
-### 3. Configurar o Banco de Dados
+# Rode as migrations
+npx sequelize-cli db:migrate
 
-A API usa SQLite, então nenhuma instalação adicional de banco é necessária. Você pode rodar o script `schema.sql` para criar as tabelas manualmente ou deixar que o Sequelize crie automaticamente ao rodar a aplicação.
+# Suba o banco de dados com Docker
+docker-compose up -d
 
-### 4. Rodar o projeto
-
-```bash
+# Inicie o servidor em ambiente de desenvolvimento
 npm run dev
 ```
 
-O servidor iniciará em `http://localhost:3000`.
-
 ---
 
-## 🔐 Autenticação
+## 🧪 Testando no Insomnia
 
-A API utiliza autenticação JWT. Primeiro, é necessário criar um usuário e fazer login para obter um token JWT. Utilize este token para autenticar nas demais rotas protegidas.
+Você pode usar o Insomnia (ou Postman) para testar as seguintes rotas:
 
----
+### 1. Criar uma nova instituição
 
-## 📫 Testando a API com o Insomnia
-
-Você pode testar todas as rotas da API utilizando o Insomnia.
-
-### 1. Instalar o Insomnia
-
-https://insomnia.rest/download
-
-### 2. Importar as requisições
-
-Crie um novo Workspace e adicione as rotas manualmente ou importe um JSON (se você tiver). Aqui estão as principais rotas:
-
-### 🧪 Rotas disponíveis
-
-#### Usuário
-
-- `POST /usuarios` – Criar novo usuário
-- `POST /login` – Autenticar e obter token JWT
-
-#### Instituições
-
-- `GET /instituicoes` – Listar instituições
-- `POST /instituicoes` – Criar instituição
-- `PUT /instituicoes/:id` – Atualizar instituição
-- `DELETE /instituicoes/:id` – Remover instituição
-
-#### Contas
-
-- `GET /contas` – Listar contas
-- `POST /contas` – Criar conta
-- `PUT /contas/:id` – Atualizar conta
-- `DELETE /contas/:id` – Deletar conta
-
-#### Transações
-
-- `GET /transacoes` – Listar transações
-- `POST /transacoes` – Criar transação
-- `PUT /transacoes/:id` – Atualizar transação
-- `DELETE /transacoes/:id` – Deletar transação
-
-#### Saldos e Extratos
-
-- `GET /saldos/:usuarioId` – Consolidado por usuário
-- `GET /extratos/:usuarioId/:instituicaoId` – Extrato de um usuário por instituição
-
-> ⚠️ **Importante:** Lembre-se de incluir o token JWT no cabeçalho Authorization:
 ```
-Authorization: Bearer <seu_token>
+POST /instituicoes
+```
+
+**Body (JSON):**
+```json
+{
+  "nome": "Banco XPTO",
+  "cnpj": "12345678000100"
+}
 ```
 
 ---
 
-## 🐳 Usando Docker (Opcional)
+### 2. Criar uma conta para um usuário
 
-```bash
-docker build -t mini-banco .
-docker-compose up
+```
+POST /usuarios/:id/contas
+```
+
+**Parâmetro na URL:**  
+`id` do usuário
+
+**Body (JSON):**
+```json
+{
+  "instituicao_id": 1,
+  "tipo": "corrente",
+  "saldo_inicial": 1000
+}
+```
+
+---
+
+### 3. Registrar uma transação
+
+```
+POST /usuarios/:id/transacoes
+```
+
+**Parâmetro na URL:**  
+`id` do usuário
+
+**Body (JSON):**
+```json
+{
+  "conta_id": 1,
+  "tipo": "deposito",
+  "valor": 200
+}
+```
+
+---
+
+### 4. Consultar o saldo do usuário
+
+```
+GET /usuarios/:id/saldo
+```
+
+**Parâmetro na URL:**  
+`id` do usuário
+
+---
+
+### 5. Consultar extrato do usuário
+
+```
+GET /usuarios/:id/extrato
+```
+
+**Parâmetro na URL:**  
+`id` do usuário
+
+---
+
+### 6. Rota raiz (teste básico)
+
+```
+GET /
+```
+
+Retorna a mensagem:
+```
+API Mini Banco Central está no ar!
 ```
 
 ---
 
 ## 📁 Estrutura de Pastas
 
-- `User.js`, `Conta.js`, `Instituicao.js`, `Transacao.js`: Models
-- `*Controller.js`: Controllers de cada recurso
-- `routes.js`: Arquivo de rotas principais
-- `auth.js`: Middleware de autenticação JWT
-- `db.js`, `database.js`: Configuração do banco via Sequelize
+```bash
+📦seu-projeto
+├── 📁app
+│   └── 📁controllers
+│       ├── InstituicaoController.js
+│       ├── ContaController.js
+│       ├── TransacaoController.js
+│       ├── SaldoController.js
+│       └── ExtratoController.js
+├── 📁config
+│   └── config.js (configurações do Sequelize)
+├── 📁database
+│   ├── 📁migrations
+│   ├── 📁models
+│   └── index.js (inicialização do Sequelize)
+├── 📄.env
+├── 📄docker-compose.yml
+├── 📄package.json
+├── 📄routes.js
+└── 📄server.js
+```
 
 ---
 
-## 📌 Autor
+## 📌 Observações
 
-Este projeto foi desenvolvido como uma simulação de um agregador de contas bancárias no contexto de Open Finance.
+- Certifique-se de que o PostgreSQL está rodando via Docker.
+- Use o Insomnia para enviar requisições com o `Content-Type: application/json`.
+- Todas as rotas estão acessíveis via `http://localhost:3000`.
 
 ---
-
